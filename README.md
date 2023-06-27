@@ -4,7 +4,7 @@
 
 > Detector-Free Structure from Motion                                                                                                                                                
 > [Xingyi He](https://github.com/hxy-123/), [Jiaming Sun](https://jiamingsun.ml), [Yifan Wang](https://github.com/wyf2020), [Sida Peng](https://pengsida.net/), [Qixing Huang](https://www.cs.utexas.edu/~huangqx/), [Hujun Bao](http://www.cad.zju.edu.cn/home/bao/), [Xiaowei Zhou](https://xzhou.me)                              
-> Arxiv Preprint
+> Arxiv Preprint, 1st in Image Matching Challenge 2023
 
 ![demo_vid](assets/demo.gif)
 
