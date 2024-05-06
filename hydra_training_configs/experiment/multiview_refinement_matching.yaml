@@ -1,0 +1,203 @@
+# @package _global_
+
+defaults:
+  - override /trainer: null # override trainer to null so it's not loaded from main config defaults...
+  - override /model: null
+  - override /datamodule: null
+  - override /callbacks: null
+  - override /logger: null
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+seed: 12345
+task_name: null
+exp_name: train
+
+model:
+  _target_: src.refinement_models.lightning_model.PL_MultiviewMatcher
+  pretrained_ckpt: null
+
+  multiview_refinement:
+    n_matching_steps: 1
+    enable_multiview_scale_align: False
+    backbone:
+      type: "S2DNet"
+      resolution: [4, 1]
+      s2dnet:
+        name: s2dnet
+        num_layers: 2
+        window_size: 15
+        checkpointing: null
+        output_dim: 128
+        pretrained: s2dnet
+        substitute_pooling_layers: True
+        combine: True
+        zoomin_strategy: post
+
+      pretrained: null
+      pretrained_fix: False
+
+    use_fine_backbone_as_coarse: False
+    interpol_type: "bilinear" 
+
+    multiview_transform:
+      sparse: True
+      crop_size: 35
+      window_size: 15
+      enable_rescaled_crop: False
+
+      enable: True
+      type: "LoFTR"
+      d_model: 128
+      nhead: 8
+      layer_names: ["self", "cross"]
+      layer_iter_n: 2
+      dropout: 0.
+      attention: "linear"
+      norm_method: layernorm
+      attention_type: 'multiview'
+
+      kernel_fn: "elu + 1"
+      d_kernel: 16
+      redraw_interval: 2
+      rezero: null
+      final_proj: False
+
+    multiview_matching_train:
+        enable: True
+        type: 's2d'
+        detector: 'OnGrid'
+        window_size: 15
+        left_point_movement_window_size: null # no move
+        best_left_strategy: 'smallest_mean_std'
+
+        s2d:
+            type: 'heatmap'
+            obtain_offset_method: 'argsoftmax'
+
+    multiview_matching_test:
+        enable: True
+        type: 's2d'
+        detector: 'OnGrid'
+        window_size: 15 # 15
+        left_point_movement_window_size: 7
+        best_left_strategy: 'smallest_mean_std'
+
+        s2d:
+            type: 'heatmap'
+            obtain_offset_method: 'argsoftmax'
+
+  supervision:
+    type: dense_grid
+    grid_scale: 8
+    fine_scale: 1
+    window_size: 15
+    sample_n_tracks_per_instance: 200  # Total tracks for a batch is batch_size * sample_n_xx
+    track_length_tolerance: 3
+    reference_points_pertubation: 2
+    scale_pertubation: 0.2
+    border_thres: 10
+
+  loss:
+    spg_spvs: False
+    fine_type: "l2_with_std"
+
+  trainer:
+    enable_plotting: True
+    canonical_bs: 4
+    canonical_lr: 2e-4
+    scaling: null
+    world_size: null
+    n_val_pairs_to_plot: 40
+
+    # Optimizer
+    optimizer: "adamw" # ['adam', 'adamw']
+    true_lr: null
+    # backbone_lr_ratio: 0.2
+    backbone_lr_ratio: 0.5
+    adam_decay: 0.
+    adamw_decay: 0.1
+
+    # Scheduler
+    scheduler: "MultiStepLR"
+    scheduler_invervel: "epoch"
+    mslr_milestones: [2,4,6,8,10,12,14,16,18]
+    mslr_gamma: 0.5
+    cosa_tmax: 30
+    elr_gamma: 0.999992
+
+  eval_metrics:
+    pose_estimation_method: RANSAC
+    ransac_pixel_thr: 1.0
+    ransac_conf: 0.99999
+    ransac_max_iters: 1000
+    epi_err_thr: 1e-6 # 3e-6
+
+  match_type: "softmax"
+
+datamodule:
+  _target_: src.datamodules.MultiviewMatcherDataModule.MultiviewMatcherDataModule
+  scene_info_dir: ${scene_info_dir}
+  dataset_path: ${dataset_path}
+  train_list_path: ${train_val_list_path}/train_list.txt
+  val_list_path: ${train_val_list_path}/val_list.txt
+
+  batch_size: 1
+  num_workers: 8
+  pin_memory: True
+
+  train_percent: 1 # For debug
+  val_percent: 0.6
+
+  sort_type: "random"
+  img_pad: True
+  max_img_size: [512]
+  img_resize: 840
+  depth_max_size: 2000
+  df: 8
+  coarse_scale: 0.125
+
+  # Sampler:
+  data_sampler: 'scene_balance'
+  n_samples_per_subset: 250
+  subset_sample_replacement: True
+  shuffle_within_epoch_subset: True
+  repeat_sample: 1
+  # random sampler configs:
+  replacement: False
+  num_samples: null
+  
+  # Other configs:
+  random_seed: 666
+
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: null
+    save_top_k: -1
+    save_last: True
+    mode: "max"
+    dirpath: "${work_dir}/checkpoints/${exp_name}"
+    filename: '{epoch}'
+    # every_n_epochs: 1
+  lr_monitor:
+    _target_: pytorch_lightning.callbacks.LearningRateMonitor
+    logging_interval: "step"
+
+logger:
+  tensorboard:
+    _target_: pytorch_lightning.loggers.TensorBoardLogger
+    save_dir: "${work_dir}/logs"
+    name: ${exp_name}
+    default_hp_metric: False
+
+  neptune:
+    tags: ["best_model"]
+  csv_logger:
+    save_dir: "."
+
+hydra:
+  run:
+    dir: ${work_dir}

@@ -1,0 +1,77 @@
+# @package _global_
+type: eval_dataset
+
+# Ray configs:
+ray:
+  enable: False
+  slurm: False
+  n_workers: 4
+  n_cpus_per_worker: 6
+  n_gpus_per_worker: 1
+  local_mode: False
+
+scene_list:
+n_scene: null # For debug
+sub_use_ray: False
+sub_ray_n_worker: 1
+verbose: False
+visualize: False
+
+phase: 'reconstruction'
+
+dataset_base_dir: /cephfs-mvs/3dv-research/hexingyi/neuralsfm_dataset
+dataset_name: onepose_bag_dataset
+output_base_dir: /cephfs-mvs/3dv-research/hexingyi/neuralsfm_output
+exp_name: ''
+
+use_prior_intrin: True # Camera center not locate in image center due to image crop in data preprocess.
+method: DetectorFreeSfM
+
+neuralsfm:
+  # Method related:
+  triangulation_mode: False
+  NEUSFM_enable_post_optimization: True
+  NEUSFM_refinement_chunk_size: 2000
+  NEUSFM_triangulation_mode: False
+  NEUSFM_coarse_matcher: 'loftr_official' # ['loftr', 'quadtree_atten']
+  NEUSFM_coarse_match_type: 'coarse_fine' # ['coarse_only', 'coares_fine']
+  NEUSFM_coarse_match_round: 4
+  NEUSFM_coarse_match_thr: 0.3
+  NEUSFM_fine_match_type: 'multiview' # ['two_view', 'multiview']
+  suffix: ""
+  NEUSFM_fine_match_model_path:
+    - weight/multiview_matcher.ckpt
+  NEUSFM_fine_match_cfg_path: 
+    - hydra_training_configs/experiment/multiview_refinement_matching.yaml
+
+  # Data related:
+  n_images: null # For debug
+  img_resize: 840
+  img_preload: False
+  down_sample_ratio: null
+  img_pair_strategy: exhaustive
+  INDEX_num_of_pair: null
+
+  # Controller:
+  close_eval: False
+  redo_all: False
+  redo_matching: False
+  redo_sfm: False
+  redo_refine: False
+
+  refine_iter_n_times: 2
+
+colmap_cfg:
+  ImageReader_single_camera: False
+  ImageReader_camera_mode: 'auto'
+  min_model_size: 3
+  no_refine_intrinsics: True
+  use_pba: False
+  geometry_verify_thr: 4.0
+  reregistration:
+    abs_pose_max_error: 12 # default: 12
+    abs_pose_min_num_inliers: 15 # default: 30
+    abs_pose_min_inlier_ratio: 0.1 # default: 0.25
+    filter_max_reproj_error: 8
+
+  colmap_mapper_cfgs: null

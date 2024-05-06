@@ -1,0 +1,78 @@
+# @package _global_
+type: eval_dataset
+
+# Ray configs:
+ray:
+  enable: False
+  slurm: False
+  n_workers: 4
+  n_cpus_per_worker: 6
+  n_gpus_per_worker: 1
+  local_mode: False
+
+n_scene: null # For debug
+scene_list:
+  - example_scene
+sub_use_ray: False
+sub_ray_n_worker: 1
+
+verbose: False
+visualize: False
+
+dataset_base_dir: /your/absolute/path/to/DetectorFreeSfM/SfM_dataset # NOTE: please modify here!
+dataset_name: example_dataset
+output_base_dir: SfM_metric_output
+exp_name: ''
+
+use_prior_intrin: False
+method: DetectorFreeSfM
+
+neuralsfm:
+  # Method related:
+  NEUSFM_enable_post_optimization: True
+  triangulation_mode: False
+  NEUSFM_coarse_matcher: 'loftr_official'
+  NEUSFM_coarse_match_type: 'coarse_only'
+  NEUSFM_refinement_chunk_size: 2000
+  NEUSFM_coarse_match_round: null
+  NEUSFM_coarse_match_thr: 0.2
+  NEUSFM_fine_match_type: 'multiview'
+  suffix: ''
+  NEUSFM_fine_match_model_path:
+    - weight/multiview_matcher.ckpt
+  NEUSFM_fine_match_cfg_path: 
+    - hydra_training_configs/experiment/multiview_refinement_matching.yaml
+
+  # Data related:
+  n_images: null # For debug
+  img_resize: 1200
+  img_preload: False
+  down_sample_ratio: null
+  img_pair_strategy: exhaustive
+  INDEX_num_of_pair: null
+  img_retrival_method: null
+
+  # Controller:
+  close_eval: True
+  redo_all: False
+  redo_sfm: False
+  redo_matching: False
+  redo_refine: False
+
+  # Pose optimization related:
+  refine_iter_n_times: 2
+
+colmap_cfg:
+  ImageReader_camera_mode: 'auto'
+  ImageReader_single_camera: False
+  min_model_size: 3
+  no_refine_intrinsics: False
+  use_pba: False
+  n_threads: 16
+  reregistration:
+    abs_pose_max_error: 12
+    abs_pose_min_num_inliers: 30
+    abs_pose_min_inlier_ratio: 0.25
+    filter_max_reproj_error: 5
+
+  colmap_mapper_cfgs: null

@@ -1,0 +1,9 @@
+[submodule "third_party/RoIAlign.pytorch"]
+	path = third_party/RoIAlign.pytorch
+	url = https://github.com/longcw/RoIAlign.pytorch.git
+[submodule "third_party/multi-view-evaluation"]
+	path = third_party/multi-view-evaluation
+	url = https://github.com/ETH3D/multi-view-evaluation.git
+[submodule "third_party/Hierarchical_Localization"]
+	path = third_party/Hierarchical_Localization
+	url = https://github.com/hxy-123/Hierarchical_Localization.git

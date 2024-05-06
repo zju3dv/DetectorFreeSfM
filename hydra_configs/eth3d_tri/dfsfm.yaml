@@ -1,0 +1,98 @@
+# @package _global_
+type: eval_dataset
+
+# Ray configs:
+ray:
+  enable: False
+  slurm: False
+  n_workers: 8
+  n_cpus_per_worker: 4
+  n_gpus_per_worker: 1
+  local_mode: False
+
+n_scene: null # For debug
+scene_list: 
+  - kicker 
+  - courtyard
+  - delivery_area
+  - electro 
+  - facade
+  - meadow 
+  - office 
+  - pipes 
+  - playground 
+  - relief 
+  - relief_2 
+  - terrace 
+  - terrains
+
+sub_use_ray: True
+sub_ray_n_worker: 4
+verbose: False
+visualize: False
+
+phase: 'reconstruction'
+
+dataset_base_dir: SfM_dataset
+dataset_name: eth3d_triangulation_dataset
+output_base_dir: SfM_metric_output
+exp_name: ''
+
+use_prior_intrin: False
+method: DetectorFreeSfM
+
+neuralsfm:
+  triangulation_mode: True
+  NEUSFM_enable_post_optimization: True
+  NEUSFM_coarse_matcher: 'loftr_official'
+  NEUSFM_coarse_match_type: 'coarse_only'
+  NEUSFM_refinement_chunk_size: 2000
+  NEUSFM_coarse_match_round: null
+  NEUSFM_coarse_match_thr: 0.4
+  suffix: ''
+  NEUSFM_fine_match_type: 'multiview'
+  NEUSFM_fine_match_model_path:
+    - weight/multiview_matcher.ckpt
+  NEUSFM_fine_match_cfg_path: 
+    - hydra_training_configs/experiment/multiview_refinement_matching.yaml
+
+  # Data related:
+  n_images: null # For debug
+  img_resize: 1600
+  img_preload: False
+  down_sample_ratio: 1
+  img_pair_strategy: exhaustive
+  INDEX_num_of_pair: null
+  img_retrival_method: null
+
+  tri_refine_pose_and_points: False
+
+  # Controller:
+  close_eval: False
+  redo_all: True
+  redo_matching: False
+  redo_sfm: False
+  redo_refine: True
+
+  refine_iter_n_times: 2
+
+colmap_cfg:
+  ImageReader_single_camera: False
+  min_model_size: 3
+  no_refine_intrinsics: True
+  use_pba: False
+  geometry_verify_thr: 12.0
+
+  reregistration:
+    abs_pose_max_error: 12
+    abs_pose_min_num_inliers: 30
+    abs_pose_min_inlier_ratio: 0.25
+    filter_max_reproj_error: 5
+
+  colmap_mapper_cfgs:
+    init_max_error: 12
+    abs_pose_max_error: 12
+    filter_max_reproj_error: 12
+    tri_merge_max_reproj_error: 12
+    tri_complete_max_reproj_error: 12
+    tri_ignore_two_view_tracks: 1

@@ -1,0 +1,112 @@
+# @package _global_
+type: eval_dataset
+
+# Ray configs:
+ray:
+  enable: False
+  slurm: False
+  n_workers: 4
+  n_cpus_per_worker: 4
+  n_gpus_per_worker: 1
+  local_mode: False
+
+n_scene: null # For debug
+scene_list: 
+    # Test set:
+    - door
+    - botanical_garden 
+    - courtyard
+    - electro
+    - kicker
+    - lounge
+    - office
+    - playground
+    - statue
+    - terrains
+    - boulders
+    - delivery_area 
+    - exhibition_hall 
+    - lecture_room 
+    - meadow
+    - old_computer 
+    - terrace
+    - bridge
+    - facade
+    - living_room  
+    - pipes
+    - terrace_2
+
+    # Validation set:
+    # - observatory 
+    # - relief
+    # - relief_2
+
+sub_use_ray: False
+sub_ray_n_worker: 1
+verbose: False
+visualize: False
+
+phase: 'reconstruction'
+
+dataset_base_dir: /cephfs-mvs/3dv-research/hexingyi/neuralsfm_dataset
+dataset_name: eth3d_dataset
+output_base_dir: /cephfs-mvs/3dv-research/hexingyi/neuralsfm_output
+exp_name: ''
+
+use_prior_intrin: False
+method: DetectorFreeSfM
+
+neuralsfm:
+  # Method related:
+  triangulation_mode: False
+  NEUSFM_enable_post_optimization: True
+  NEUSFM_coarse_matcher: 'loftr_official'
+  NEUSFM_coarse_match_type: 'coarse_only' # ['coarse_only', 'coares_fine']
+  NEUSFM_refinement_chunk_size: 2000
+  NEUSFM_coarse_match_round: null
+  NEUSFM_coarse_match_thr: 0.2
+  suffix: ''
+  NEUSFM_fine_match_model_path:
+    - weight/multiview_matcher.ckpt
+  NEUSFM_fine_match_cfg_path: 
+    - hydra_training_configs/experiment/multiview_refinement_matching.yaml
+
+  # Data related:
+  n_images: null # For debug
+  img_resize: 1600
+  img_preload: False
+  down_sample_ratio: 1
+  img_pair_strategy: exhaustive
+  INDEX_num_of_pair: null
+  img_retrival_method: null
+
+  # Controller:
+  close_eval: False
+  redo_all: True
+  redo_matching: False
+  redo_sfm: False
+  redo_refine: True
+
+  refine_iter_n_times: 2
+
+colmap_cfg:
+  ImageReader_camera_mode: 'auto'
+  ImageReader_single_camera: False
+  min_model_size: 3
+  no_refine_intrinsics: False
+  n_threads: 16
+  use_pba: False
+  geometry_verify_thr: 10.0
+  reregistration:
+    abs_pose_max_error: 12 
+    abs_pose_min_num_inliers: 30
+    abs_pose_min_inlier_ratio: 0.25
+    filter_max_reproj_error: 5
+
+  colmap_mapper_cfgs:
+    init_max_error: 10
+    abs_pose_max_error: 12
+    filter_max_reproj_error: 10
+    tri_merge_max_reproj_error: 10
+    tri_complete_max_reproj_error: 10
+    tri_ignore_two_view_tracks: 1

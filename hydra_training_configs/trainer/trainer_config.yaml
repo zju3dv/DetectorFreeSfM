@@ -1,0 +1,27 @@
+# @package _global_
+
+trainer:
+  _target_: pytorch_lightning.Trainer
+  gpus:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+  num_nodes: 1
+  accelerator: "ddp"
+
+  min_epochs: 1
+  max_epochs: 25
+  gradient_clip_val: 0.5
+  accumulate_grad_batches: 1
+  weights_summary: full
+  num_sanity_val_steps: 2 # 0 means no sanity check, -1 means use all val data
+  check_val_every_n_epoch: 1
+  log_every_n_steps: 70
+  flush_logs_every_n_steps: 1
+  reload_dataloaders_every_epoch: False
+  replace_sampler_ddp: False

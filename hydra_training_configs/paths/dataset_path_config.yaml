@@ -1,0 +1,5 @@
+# @package _global_
+
+scene_info_dir: megadepth/multiview_matching_indices/scenes
+dataset_path: megadepth
+train_val_list_path: megadepth/multiview_matching_indices/train_val_list

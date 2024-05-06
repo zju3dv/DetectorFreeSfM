@@ -1,0 +1,50 @@
+# @package _global_
+type: eval_dataset
+
+# Ray configs:
+ray:
+  enable: False
+  slurm: False
+  n_workers: 2
+  n_cpus_per_worker: 5
+  n_gpus_per_worker: 1
+  local_mode: False
+
+n_scene: null
+sub_use_ray: False
+sub_ray_n_worker: 2
+verbose: False
+visualize: False
+exp_name: ''
+
+dataset_base_dir: null
+dataset_name: null
+output_base_dir: null
+
+use_prior_intrin: False
+method: null
+
+neuralsfm:
+  # Method related:
+  NEUSFM_enable_post_optimization: True
+  NEUSFM_triangulation_mode: False
+
+  # Data related:
+  n_images: null 
+  img_resize: null
+  down_sample_ratio: null
+  img_pair_strategy: exhaustive
+  INDEX_num_of_pair: null
+
+  # Controller:
+  close_eval: False
+  redo_all: True
+  redo_sfm: False
+  redo_matching: False
+  redo_refine: False
+
+colmap_cfg:
+  ImageReader_single_camera: False
+  min_model_size: 3
+  filter_max_reproj_error: 4
+  no_refine_intrinsics: True
