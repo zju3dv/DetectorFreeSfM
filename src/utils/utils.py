@@ -1,47 +1,3 @@
-# %BANNER_BEGIN%
-# ---------------------------------------------------------------------
-# %COPYRIGHT_BEGIN%
-#
-#  Magic Leap, Inc. ("COMPANY") CONFIDENTIAL
-#
-#  Unpublished Copyright (c) 2020
-#  Magic Leap, Inc., All Rights Reserved.
-#
-# NOTICE:  All information contained herein is, and remains the property
-# of COMPANY. The intellectual and technical concepts contained herein
-# are proprietary to COMPANY and may be covered by U.S. and Foreign
-# Patents, patents in process, and are protected by trade secret or
-# copyright law.  Dissemination of this information or reproduction of
-# this material is strictly forbidden unless prior written permission is
-# obtained from COMPANY.  Access to the source code contained herein is
-# hereby forbidden to anyone except current COMPANY employees, managers
-# or contractors who have executed Confidentiality and Non-disclosure
-# agreements explicitly covering such access.
-#
-# The copyright notice above does not evidence any actual or intended
-# publication or disclosure  of  this source code, which includes
-# information that is confidential and/or proprietary, and is a trade
-# secret, of  COMPANY.   ANY REPRODUCTION, MODIFICATION, DISTRIBUTION,
-# PUBLIC  PERFORMANCE, OR PUBLIC DISPLAY OF OR THROUGH USE  OF THIS
-# SOURCE CODE  WITHOUT THE EXPRESS WRITTEN CONSENT OF COMPANY IS
-# STRICTLY PROHIBITED, AND IN VIOLATION OF APPLICABLE LAWS AND
-# INTERNATIONAL TREATIES.  THE RECEIPT OR POSSESSION OF  THIS SOURCE
-# CODE AND/OR RELATED INFORMATION DOES NOT CONVEY OR IMPLY ANY RIGHTS
-# TO REPRODUCE, DISCLOSE OR DISTRIBUTE ITS CONTENTS, OR TO MANUFACTURE,
-# USE, OR SELL ANYTHING THAT IT  MAY DESCRIBE, IN WHOLE OR IN PART.
-#
-# %COPYRIGHT_END%
-# ----------------------------------------------------------------------
-# %AUTHORS_BEGIN%
-#
-#  Originating Authors: Paul-Edouard Sarlin
-#                       Daniel DeTone
-#                       Tomasz Malisiewicz
-#
-# %AUTHORS_END%
-# --------------------------------------------------------------------*/
-# %BANNER_END%
-
 from pathlib import Path
 import time
 from collections import OrderedDict
@@ -50,17 +6,11 @@ from loguru import logger
 
 import numpy as np
 import cv2
-import pydegensac
 import torch
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 import random
-try:
-    import pymagsac
-except ImportError as e:
-    logger.warning('pymagsac not installed!')
-
 
 class AverageTimer:
     """ Class to help manage printing simple timing of code execution. """
@@ -326,108 +276,6 @@ def estimate_pose(kpts0, kpts1, K0, K1, thresh, conf=0.99999):
     return ret
 
 
-def estimate_pose_degensac(kpts0, kpts1, K0, K1, thresh, conf=0.9999, max_iters=1000, min_candidates=10):
-    # TODO: Try different `min_candidatas`?
-    if len(kpts0) < min_candidates:
-        return None
-    
-    F, mask = pydegensac.findFundamentalMatrix(kpts0,
-                                               kpts1,
-                                               px_th=thresh,
-                                               conf=conf,
-                                               max_iters=max_iters)
-    mask = mask.astype(np.uint8)
-    E = (K1.T @ F @ K0).astype(np.float64)
-    
-    kpts0 = (kpts0 - K0[[0, 1], [2, 2]][None]) / K0[[0, 1], [0, 1]][None]
-    kpts1 = (kpts1 - K1[[0, 1], [2, 2]][None]) / K1[[0, 1], [0, 1]][None]
-    
-    # This might be optional (since DEGENSAC handle it internally ?)
-    best_num_inliers = 0
-    ret = None
-    for _E in np.split(E, len(E) / 3):
-        n, R, t, _ = cv2.recoverPose(
-            _E, kpts0, kpts1, np.eye(3), 1e9, mask=mask)
-        if n > best_num_inliers:
-            best_num_inliers = n
-            ret = (R, t[:, 0], mask.ravel() > 0)
-    
-    return ret
-
-
-def estimate_pose_magsac(kpts0, kpts1, K0, K1, use_magsac_pp=True, min_candidates=5, mode='E',
-                         sigma_th=None, conf=0.99999, max_iters=10000, partition_num=None):
-    # TODO: tune unused parameters
-    if len(kpts0) < min_candidates:
-        return None
-    if mode == 'E':
-        E, mask = pymagsac.findEssentialMatrix(
-            np.ascontiguousarray(kpts0),
-            np.ascontiguousarray(kpts1),
-            np.ascontiguousarray(K0),
-            np.ascontiguousarray(K1),
-            use_magsac_pp,
-            conf=conf,
-            max_iters=max_iters)
-    else:
-        raise NotImplementedError()
-    
-    mask = mask.astype(np.uint8)
-    
-    kpts0 = (kpts0 - K0[[0, 1], [2, 2]][None]) / K0[[0, 1], [0, 1]][None]
-    kpts1 = (kpts1 - K1[[0, 1], [2, 2]][None]) / K1[[0, 1], [0, 1]][None]
-    
-    if E is None:
-        return None
-    
-    best_num_inliers = 0
-    ret = None
-    for _E in np.split(E, len(E) / 3):
-        n, R, t, _ = cv2.recoverPose(
-            _E, kpts0, kpts1, np.eye(3), 1e9, mask=mask)
-        if n > best_num_inliers:
-            best_num_inliers = n
-            ret = (R, t[:, 0], mask.ravel() > 0)
-    
-    return ret
-
-
-def rotate_intrinsics(K, image_shape, rot):
-    """image_shape is the shape of the image after rotation"""
-    assert rot <= 3
-    h, w = image_shape[:2][::-1 if (rot % 2) else 1]
-    fx, fy, cx, cy = K[0, 0], K[1, 1], K[0, 2], K[1, 2]
-    rot = rot % 4
-    if rot == 1:
-        return np.array([[fy, 0., cy],
-                         [0., fx, w-1-cx],
-                         [0., 0., 1.]], dtype=K.dtype)
-    elif rot == 2:
-        return np.array([[fx, 0., w-1-cx],
-                         [0., fy, h-1-cy],
-                         [0., 0., 1.]], dtype=K.dtype)
-    else:  # if rot == 3:
-        return np.array([[fy, 0., h-1-cy],
-                         [0., fx, cx],
-                         [0., 0., 1.]], dtype=K.dtype)
-
-
-def rotate_pose_inplane(i_T_w, rot):
-    rotation_matrices = [
-        np.array([[np.cos(r), -np.sin(r), 0., 0.],
-                  [np.sin(r), np.cos(r), 0., 0.],
-                  [0., 0., 1., 0.],
-                  [0., 0., 0., 1.]], dtype=np.float32)
-        for r in [np.deg2rad(d) for d in (0, 270, 180, 90)]
-    ]
-    return np.dot(rotation_matrices[rot], i_T_w)
-
-
-def scale_intrinsics(K, scales):
-    scales = np.diag([1./scales[0], 1./scales[1], 1.])
-    return np.dot(scales, K)
-
-
 def to_homogeneous(points):
     return np.concatenate([points, np.ones_like(points[:, :1])], axis=-1)
 
@@ -587,9 +435,7 @@ def plot_local_windows(kpts, color='r', lw=1, ax_=0, window_size=9):
     
     patches = []
     for kpt in kpts:
-        #patches.append(matplotlib.patches.Rectangle((kpt[0],kpt[1]),window_size,window_size))
         ax[ax_].add_patch(matplotlib.patches.Rectangle((kpt[0]-(window_size//2)-1,kpt[1]-(window_size//2)-1), window_size+2, window_size+2, lw=lw,color=color, fill=False))
-    #ax[ax_].add_collection(matplotlib.collections.PathCollection(patches))
 
 def make_matching_plot(image0, image1, kpts0, kpts1, mkpts0, mkpts1,
                        color, text, path=None, show_keypoints=False,
@@ -692,10 +538,7 @@ def make_matching_plot_show_more(image0, image1, kpts0, kpts1, mkpts0, mkpts1,
         fontsize=5, va='bottom', ha='left', color=txt_color)
     if path:
         plt.savefig(str(path), bbox_inches='tight', pad_inches=0)
-        #plt.close()
-    # TODO: Would it leads to any issue without current figure opened?
     return fig
-
 
 def make_matching_plot_fast(image0, image1, kpts0, kpts1, mkpts0,
                             mkpts1, color, text, path=None,
