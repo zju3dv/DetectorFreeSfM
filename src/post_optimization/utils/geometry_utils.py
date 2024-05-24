@@ -1,7 +1,6 @@
 import numpy as np
 
 import torch
-from pytorch3d import transforms
 from src.utils.colmap.read_write_model import qvec2rotmat
 
 
@@ -16,21 +15,6 @@ def convert_pose2T(pose):
 def convert_T2pose(T):
     # T: 4*4
     return [T[:3, :3], T[:3, 3]]
-
-
-def convert_pose2angleAxis(pose):
-    # pose: [R: 3*3, t: 3]
-    angle_axis_torch = transforms.so3_log_map(
-        torch.from_numpy(pose[0]).unsqueeze(0)
-    )  # 1*3
-    angle_axis = angle_axis_torch.squeeze().numpy()  # 3
-    return np.concatenate([angle_axis[None], pose[1][None]], axis=1)  # 1*6
-
-
-def convert_T2angleAxis(T):
-    # T: 4*4
-    pose = convert_T2pose(T)
-    return convert_pose2angleAxis(pose)
 
 
 def get_pose_from_colmap_image(image):
