@@ -32,10 +32,10 @@ wget https://www.eth3d.net/data/multi_view_test_dslr_undistorted.7z
 cd /your/repo/path/DetectorFreeSfM/SfM_dataset
 
 # For SfM dataset:
-python tools/parse_eth3d_dataset.py --triangulation_mode False --output_base_dir SfM_dataset/eth3d_dataset
+python tools/parse_data/parse_eth3d_dataset.py --triangulation_mode False --output_base_dir SfM_dataset/eth3d_dataset
 
 # For Triangulation dataset:
-python tools/parse_eth3d_dataset.py --triangulation_mode True --output_base_dir SfM_dataset/eth3d_triangulation_dataset
+python tools/parse_data/parse_eth3d_dataset.py --triangulation_mode True --output_base_dir SfM_dataset/eth3d_triangulation_dataset
 ```
 
 ### TexturePoorSfM Dataset:

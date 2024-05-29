@@ -13,3 +13,4 @@ omegaconf
 wandb
 rich
 natsort
+torchmetrics==0.6.0
