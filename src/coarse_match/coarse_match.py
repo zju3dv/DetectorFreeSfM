@@ -216,7 +216,7 @@ def detector_free_coarse_matching(
             update_matches(
                 sub_matches,
                 keypoints,
-                merge=True if match_round_ratio == 1 else False,
+                merge=False,
                 verbose=verbose,
                 pair_name_split=cfgs["matcher"]["pair_name_split"],
             )

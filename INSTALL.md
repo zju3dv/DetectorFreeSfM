@@ -28,8 +28,8 @@ Install [multi-view evaluation tool](https://github.com/ETH3D/multi-view-evaluat
 Download pretrained weights from [here](https://drive.google.com/file/d/1phP6U1CQ7jo1ZfUZ0xRYDf0IBZX_t9qb/view?usp=sharing) and place it under repo directory. Then unzip it by running the following command:
 ```shell
 # Be sure that you are currently under the repo directory:
-unzip weight.zip
-rm -rf weight.zip
+tar -xvf weight.tar
+rm -rf weight.tar
 ```
 
 ## Modified COLMAP version installation

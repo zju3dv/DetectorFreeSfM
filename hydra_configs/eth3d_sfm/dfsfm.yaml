@@ -43,7 +43,7 @@ scene_list:
 
 sub_use_ray: False
 sub_ray_n_worker: 1
-verbose: False
+verbose: True
 visualize: False
 
 phase: 'reconstruction'
@@ -91,8 +91,9 @@ neuralsfm:
 
 colmap_cfg:
   ImageReader_camera_mode: 'auto'
+  ImageReader_camera_model: "SIMPLE_RADIAL"
   ImageReader_single_camera: False
-  min_model_size: 3
+  min_model_size: 6
   no_refine_intrinsics: False
   n_threads: 16
   use_pba: False

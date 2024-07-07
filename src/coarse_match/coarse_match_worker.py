@@ -223,10 +223,6 @@ def update_matches(matches, keypoints, merge=False, pba=None, verbose=True, **kw
 
             if len(merge_ids) == 0:
                 merge_ids = np.empty((0, 2))
-                logger.warning("merge failed! No matches have been merged!")
-            else:
-                logger.info(f'merge successful! Merge {len(merge_ids)} matches')
-            
             try:
                 mids_multiview = np.concatenate([mids, merge_ids], axis=0)
             except ValueError:

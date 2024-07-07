@@ -230,7 +230,6 @@ def output_metric(metric_dict, bag_name=None):
     return output_str
 
 def aggregate_multi_scene_metrics(metric_dict, dataset_name='IMC', verbose=True, output_path=None):
-    import ipdb; ipdb.set_trace()
     metric_all = {} # metric_name: [metrics]
 
     if ("IMC" in dataset_name) or ('onepose_bag_dataset' in dataset_name):
