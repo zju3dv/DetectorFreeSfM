@@ -1,5 +1,5 @@
 # Detector-Free Structure from Motion
-### [Project Page](https://zju3dv.github.io/DetectorFreeSfM/) | [Paper](https://zju3dv.github.io/DetectorFreeSfM/files/main_paper_with_sup.pdf)
+### [Project Page](https://zju3dv.github.io/DetectorFreeSfM/) | [Paper](https://zju3dv.github.io/DetectorFreeSfM/files/main_cvpr.pdf)
 <br/>
 
 > Detector-Free Structure from Motion                                                                                                                                                
